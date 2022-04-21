@@ -18,22 +18,20 @@
         move $s0, $v0   # Arquivo
         li $s1, 0       # soma = 0
 
+        move $a0, $s0       # Arquivo
+        la $a1, buffer      # Buffer para receber info do arquivo
+        la $a2, 1           # Quantidade de caracteres por leitura
+        
         while:
-            move $a0, $s0       # Arquivo
-            la $a1, buffer      # Buffer para receber info do arquivo
-            la $a2, 1           # Quantidade de caracteres por leitura
             jal numeros
-            beqz $v1, somar
-            sub $s1, $s1, $v0   # soma -= retorno de numeros se $v1 == 1
-            j next_while
-            somar:
-                add $s1, $s1, $v0   # soma += retorno de numeros
-            next_while:
-                bgtz $v0, while     # Realiza while ate que $v0 == 0
+            add $s1, $s1, $v0
+            beq $v1, 1, print
+            j while
 
-        move $a0, $s1
-        li $v0, 1
-        syscall
+        print:
+            move $a0, $s1
+            li $v0, 1
+            syscall
 
         # Encerrar programa
         li $v0, 16  # Fechar arquivo
@@ -64,54 +62,98 @@
 
     ######################################################################################################
 
+    fgetc:
+        # Variaveis:
+        #   $a0: Arquivo
+        #   $a1: Buffer
+        #   $a2: Bytes por leitura
+        #   $t0: temp
+
+        # Ajustar pilha
+        addi $sp, $sp, -4
+        sw $t0, 0($sp)
+
+        li $v0, 14  # Codigo syscall para leitura de arquivo
+        syscall
+        bnez $v0, return_cod
+        j return_fgetc
+
+        return_cod:
+            lb $t0, ($a1)
+            move $v0, $t0
+
+        return_fgetc:
+            # Restaurar pilha
+            lw $t0, 0($sp)
+            addi $sp, $sp, 4
+
+        jr $ra
+
+    ######################################################################################################    
+
     numeros:
         # Variaveis:
         #   $a0: Arquivo
-        #   $t0: numero
-        #   $t1: auxiliar
-        #   $t2: elemento lido
-        #   $t3: auxiliar negativo
+        #   $a1: Buffer
+        #   $a2: Bytes por leitura
+        #   $t0: Valor lido
+        #   $t1: Numero
+        #   $t2: Flag
+        #   $t3: auxiliar valor " "
+        #   $t4: auxiliar valor "-"
+        #   $t5: auxiliar
 
         # Ajustar pilha
-        addi $sp, $sp, -16
+        addi $sp, $sp, -24
         sw $t0, 0($sp)
         sw $t1, 4($sp)
         sw $t2, 8($sp)
         sw $t3, 12($sp)
+        sw $t4, 16($sp)
+        sw $ra, 20($sp)
 
         # Atribuicao de valores
-        li $t0, 0
-        li $t1, 32  # Codigo ASCII para espaco
-        li $t3, 45  # Codigo ASCII para -
+        li $t1, 0
+        li $t2, 0
+        li $t3, 32
+        li $t4, 45
         li $v1, 0
+
+        while_numeros:
+            jal fgetc
+            move $t0, $v0
+            blez $t0, return_numeros_eof
+            beq $t0, $t3, finalizar_numero
+            beq $t0, $t4, set_flag_negativo
+
+            # Montar numero
+            subi $t0, $t0, 48
+            mul $t1, $t1, 10
+            add $t1, $t1, $t0
+
+            j while_numeros
+
+            set_flag_negativo:
+                li $t2, 1
+                j while_numeros
         
-        montar_numero:
-            li $v0, 14  # Codigo syscall para leitura de arquivo
-            syscall
-            lb $t2, ($a1)
-            bne $t2, $t3, continue
+        return_numeros_eof:
             li $v1, 1
-            j next_montar_numero
-            continue:
-                beq $t2, $t1, return_numeros
-                beqz $v0, return_numeros
-
-                subi $t2, $t2, 48
-                mul $t0, $t0, 10
-                add $t0, $t0, $t2
-
-            next_montar_numero:
-                j montar_numero
         
+        finalizar_numero:
+            bne $t2, 1, return_numeros
+            sub $t1, $zero, $t1
+
         return_numeros:
-            move $v0, $t0
+            move $v0, $t1
+            
             # Restaurar pilha
             lw $t0, 0($sp)
             lw $t1, 4($sp)
             lw $t2, 8($sp)
             lw $t3, 12($sp)
-            addi $sp, $sp, 16
+            lw $t4, 16($sp)
+            lw $ra, 20($sp)
+            addi $sp, $sp, 24
+
             jr $ra
-
-
-
