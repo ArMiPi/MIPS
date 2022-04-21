@@ -67,11 +67,6 @@
         #   $a0: Arquivo
         #   $a1: Buffer
         #   $a2: Bytes por leitura
-        #   $t0: temp
-
-        # Ajustar pilha
-        addi $sp, $sp, -4
-        sw $t0, 0($sp)
 
         li $v0, 14  # Codigo syscall para leitura de arquivo
         syscall
@@ -79,14 +74,9 @@
         j return_fgetc
 
         return_cod:
-            lb $t0, ($a1)
-            move $v0, $t0
+            lb $v0, ($a1)
 
         return_fgetc:
-            # Restaurar pilha
-            lw $t0, 0($sp)
-            addi $sp, $sp, 4
-
         jr $ra
 
     ######################################################################################################    
