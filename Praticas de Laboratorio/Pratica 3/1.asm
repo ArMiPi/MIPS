@@ -1,5 +1,5 @@
 #---------------------------------------------------------------------------------
-# - Realizar a leitura de duas strings (string1 e string2) de no m�ximo 100 caracteres
+# - Realizar a leitura de duas strings (string1 e string2) de no maximo 100 caracteres
 # - Intercalar string2 em string1 e armazenar o retorno em uma string3
 # - Ex: string1 = "casa", string2 = "0123", string3 = "c0a1s2a3"
 #---------------------------------------------------------------------------------

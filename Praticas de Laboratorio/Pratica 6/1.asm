@@ -190,7 +190,7 @@
 
     numeros:
         #--------------------------------------------------------------------------------------------------#
-        # Realiza a leitura de um numero em um arquivo, o final do numero e' indicado por EOL ou espaço     #
+        # Realiza a leitura de um numero em um arquivo, o final do numero e' indicado por EOL ou espaço    #
         #--------------------------------------------------------------------------------------------------#
         # Variaveis:                                                                                       #
         #   $a0: Arquivo                                                                                   #
